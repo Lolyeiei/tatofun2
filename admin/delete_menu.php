@@ -1,17 +1,32 @@
-<!--เสร็จแล้ว-->
 <?php
-include('../config.php');
+session_start();
+include('../config.php'); 
 
-// รับค่า id_menu มาจากปุ่มลบในหน้า manage_menu.php
-if(isset($_GET['id'])){
+if(isset($_GET['id'])) {
     $id = $_GET['id'];
+
+    // 1. ดึงชื่อไฟล์รูปภาพเดิมจากฐานข้อมูลก่อนลบ
+    $check_sql = "SELECT img_menu FROM tb_menu WHERE id_menu = '$id'";
+    $result = mysqli_query($conn, $check_sql);
+    $row = mysqli_fetch_array($result);
+    $file_name = $row['img_menu'];
+
+    // 2. ลบไฟล์รูปภาพออกจากโฟลเดอร์ img_ad/ (ถ้ามี)
+    if(!empty($file_name)) {
+        $file_path = "img_ad/" . $file_name;
+        if(file_exists($file_path)) {
+            unlink($file_path); // สั่งลบไฟล์จริงออกจาก Server
+        }
+    }
+
+    // 3. ลบข้อมูลออกจากฐานข้อมูล
+    $delete_sql = "DELETE FROM tb_menu WHERE id_menu = '$id'";
     
-    $sql = "DELETE FROM tb_menu WHERE id_menu = $id";
-    
-    if(mysqli_query($conn, $sql)){
-        echo "<script>alert('ลบรายการสำเร็จ!'); window.location='manage_menu.php';</script>";
+    if(mysqli_query($conn, $delete_sql)) {
+        header("Location: manage_menu.php");
+        exit();
     } else {
-        echo "เกิดข้อผิดพลาด: " . mysqli_error($conn);
+        echo "Error: " . mysqli_error($conn);
     }
 }
 ?>

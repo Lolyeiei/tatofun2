@@ -187,7 +187,7 @@ include '../config.php';
         </div>
 
         <div class="text-center mt-5">
-            <p class="text-muted small">© 2026 TatoFun System - ความสุขคำโตๆ ในทุกคำที่ทอด</p>
+            <p class="text-muted small">© 2026 TatoFun System - ความสุขคำโตๆ ในทุกๆคำ</p>
         </div>
     </div>
 
