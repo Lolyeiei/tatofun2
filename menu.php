@@ -1,6 +1,14 @@
 <?php
 session_start();
-include 'config.php'; // เชื่อมต่อฐานข้อมูล tb_menu
+include 'config.php'; 
+
+// 1. คำนวณจำนวนชิ้นทั้งหมดในตะกร้าเพื่อแสดงที่ปุ่มลอย
+$total_qty = 0;
+if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $id => $qty) {
+        $total_qty += (int)$qty;
+    }
+}
 ?>
 <!doctype html>
 <html lang="th">
@@ -21,9 +29,9 @@ include 'config.php'; // เชื่อมต่อฐานข้อมูล 
         .card-menu:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); }
         .card-menu img { height: 200px; object-fit: cover; width: 100%; background-color: #eee; }
         .price-tag { color: #2c3e50; font-size: 1.2rem; font-weight: 600; }
-        .btn-add { background-color: #2c3e50; color: white; border-radius: 10px; padding: 5px 15px; border: none; font-size: 0.9rem; transition: 0.2s; }
+        .btn-add { background-color: #2c3e50; color: white; border-radius: 10px; padding: 5px 15px; border: none; font-size: 0.9rem; transition: 0.2s; text-decoration: none; }
         .btn-add:hover { background-color: #000; color: #ffc107; transform: scale(1.05); }
-        .cart-float { position: fixed; bottom: 20px; right: 20px; z-index: 1000; transition: 0.3s; }
+        .cart-float { position: fixed; bottom: 30px; right: 30px; z-index: 1000; transition: 0.3s; }
         .cart-float:hover { transform: scale(1.1); }
     </style>
 </head>
@@ -34,7 +42,7 @@ include 'config.php'; // เชื่อมต่อฐานข้อมูล 
         <a class="btn btn-outline-dark rounded-pill px-3 py-1" href="index.php">
             <i class="bi bi-chevron-left"></i> กลับหน้าหลัก
         </a>
-        <div class="fw-bold d-none d-md-block">TatoFun Menu</div>
+        <div class="fw-bold d-none d-md-block fs-4">Tato<span class="text-warning">Fun</span> Menu</div>
     </div>
 </nav>
 
@@ -53,22 +61,30 @@ include 'config.php'; // เชื่อมต่อฐานข้อมูล 
         
         if ($result && mysqli_num_rows($result) > 0) {
             while($row = mysqli_fetch_assoc($result)) {
+                $img_path = "admin/img_ad/" . $row['img_menu'];
         ?>
         <div class="col-6 col-md-4 col-lg-3">
-            <div class="card card-menu h-100 text-center">
-                <img src="img/<?= htmlspecialchars($row['img_menu']) ?>" 
+            <div class="card card-menu h-100 text-center shadow-sm">
+                <img src="<?= $img_path ?>" 
                      alt="<?= htmlspecialchars($row['name_menu']) ?>"
-                     onerror="this.src='https://placehold.co/400x400?text=TatoFun'">
+                     onerror="this.src='img/no1.png';">
                 
                 <div class="card-body d-flex flex-column p-3">
                     <h5 class="fw-bold mb-3"><?= htmlspecialchars($row['name_menu']) ?></h5>
                     <div class="d-flex justify-content-between align-items-center mt-auto">
                         <span class="price-tag">฿<?= number_format($row['price_menu'], 0) ?></span>
-                        <a href="cart_action.php?action=add&id=<?= $row['id_menu'] ?>" 
-                           class="btn btn-add" 
-                           onclick="return notifyAdd('<?= htmlspecialchars($row['name_menu']) ?>')">
-                            + สั่งเลย
-                        </a>
+                        
+                        <?php if(isset($_SESSION['user_id'])): ?>
+                            <a href="cart_action.php?action=add&id=<?= $row['id_menu'] ?>" 
+                               class="btn btn-add" 
+                               onclick="return notifyAdd('<?= htmlspecialchars($row['name_menu']) ?>')">
+                                + สั่งเลย
+                            </a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                                ล็อกอินเพื่อสั่ง
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -82,26 +98,19 @@ include 'config.php'; // เชื่อมต่อฐานข้อมูล 
     </div>
 </div>
 
+<?php if(isset($_SESSION['user_id'])): ?>
 <div class="cart-float">
-    <a href="cart.php" class="btn btn-dark rounded-pill py-2 px-4 shadow-lg border-2 border-warning">
-        <i class="bi bi-cart3 me-2"></i> ตะกร้าของฉัน 
-        <span class="badge bg-warning text-dark px-2">
-            <?php 
-                $total_qty = 0;
-                if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-                    foreach($_SESSION['cart'] as $qty) {
-                        $total_qty += $qty; // บวกรวมจำนวนชิ้นทั้งหมด
-                    }
-                }
-                echo $total_qty; // จะแสดงเลข 13 ตามตัวอย่างของคุณ
-            ?>
+    <a href="cart.php" class="btn btn-dark rounded-pill py-3 px-4 shadow-lg border-2 border-warning text-decoration-none">
+        <i class="bi bi-cart3 me-2 text-warning"></i> ตะกร้าของฉัน 
+        <span class="badge bg-warning text-dark px-2 ms-1 fs-6">
+            <?= $total_qty ?>
         </span>
     </a>
 </div>
+<?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ฟังก์ชันแจ้งเตือนเมื่อกดปุ่มสั่งซื้อ
 function notifyAdd(name) {
     const Toast = Swal.mixin({
         toast: true,
@@ -115,9 +124,8 @@ function notifyAdd(name) {
         icon: 'success',
         title: 'เพิ่ม ' + name + ' ลงตะกร้าแล้ว'
     });
-    return true; // ปล่อยให้ลิงก์ทำงานต่อเพื่อไปที่ cart_action.php
+    return true; 
 }
 </script>
-
 </body>
 </html>

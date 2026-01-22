@@ -29,8 +29,8 @@ $pending_count = ($res_pending) ? mysqli_fetch_assoc($res_pending)['total'] : 0;
     <title>จัดการรายการสั่งซื้อ - TatoFun Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
         body { background-color: #fffdf0; font-family: 'Kanit', sans-serif; }
         .order-card { border-radius: 25px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.05); background: #ffffff; }
         .status-badge { border-radius: 50px; padding: 5px 15px; font-weight: 600; font-size: 0.85rem; }
@@ -38,14 +38,22 @@ $pending_count = ($res_pending) ? mysqli_fetch_assoc($res_pending)['total'] : 0;
         .status-shipping { background: #cfe2ff; color: #084298; } 
         .status-success { background: #d1e7dd; color: #0f5132; }  
         
-        /* ตกแต่งปุ่มพิมพ์เพิ่มเติม */
+        /* ปุ่มย้อนกลับมาตรฐาน - ล็อคตำแหน่งและขนาดเดียวกันทุกหน้า */
+        .btn-back-standard {
+            width: 140px;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
         .btn-print { background-color: #0dcaf0; color: white; border: none; }
         .btn-print:hover { background-color: #0baccc; color: white; }
     </style>
 </head>
 <body>
 
-<div class="container py-5">
+<div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm border-start border-success border-5">
         <h4 class="fw-bold text-success mb-0">
             <i class="bi bi-clipboard-check-fill me-2"></i> รายการสั่งซื้อ (Orders)
@@ -53,13 +61,20 @@ $pending_count = ($res_pending) ? mysqli_fetch_assoc($res_pending)['total'] : 0;
                 <span class="badge bg-danger rounded-pill ms-2 fs-6"><?= $pending_count ?> ใหม่</span>
             <?php endif; ?>
         </h4>
-        <a href="index_ad.php" class="btn btn-secondary btn-sm rounded-pill px-4 shadow-sm">← กลับหน้าหลัก</a>
+        <div class="d-flex gap-2">
+            <a href="sales_report.php" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center">
+                <i class="bi bi-graph-up-arrow me-2"></i> ดูรายงานยอดขาย
+            </a>
+            <a href="index_ad.php" class="btn btn-secondary btn-sm btn-back-standard d-flex align-items-center justify-content-center">
+                <i class="bi bi-arrow-left-circle me-2"></i> กลับหน้าหลัก
+            </a>
+        </div>
     </div>
 
-    <div class="card order-card overflow-hidden">
+    <div class="card order-card overflow-hidden shadow-sm">
         <div class="table-responsive">
             <table class="table table-hover mb-0 text-nowrap align-middle">
-                <thead class="table-light">
+                <thead class="table-light text-secondary">
                     <tr>
                         <th class="text-center">ID</th>
                         <th>ข้อมูลลูกค้า</th>
@@ -71,10 +86,10 @@ $pending_count = ($res_pending) ? mysqli_fetch_assoc($res_pending)['total'] : 0;
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($result)): ?>
                     <tr>
-                        <td class="text-center fw-bold">#<?= $row['order_id'] ?></td>
+                        <td class="text-center fw-bold text-muted">#<?= $row['order_id'] ?></td>
                         <td>
-                            <div class="fw-bold"><?= htmlspecialchars($row['cus_name'] ?? 'ไม่ระบุชื่อ') ?></div>
-                            <small class="text-muted"><i class="bi bi-telephone"></i> <?= $row['cus_tel'] ?? '-' ?></small>
+                            <div class="fw-bold text-dark"><?= htmlspecialchars($row['cus_name'] ?? 'ไม่ระบุชื่อ') ?></div>
+                            <small class="text-muted"><i class="bi bi-telephone me-1"></i> <?= $row['cus_tel'] ?? '-' ?></small>
                         </td>
                         <td class="text-end fw-bold text-primary"><?= number_format($row['total_price'] ?? 0, 2) ?> ฿</td>
                         <td class="text-center">
@@ -88,23 +103,32 @@ $pending_count = ($res_pending) ? mysqli_fetch_assoc($res_pending)['total'] : 0;
                         </td>
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
-                                <a href="print_shipping.php?id=<?= $row['order_id'] ?>" target="_blank" class="btn btn-print btn-sm rounded-pill px-3 shadow-sm">
-                                    <i class="bi bi-printer"></i> พิมพ์
+                                <a href="receipt_print.php?id=<?= $row['order_id'] ?>" target="_blank" class="btn btn-info btn-sm rounded-pill px-3 shadow-sm text-white">
+                                    <i class="bi bi-file-earmark-text"></i> ใบเสร็จ
+                                </a>
+
+                                <a href="print_shipping.php?id=<?= $row['order_id'] ?>" target="_blank" class="btn btn-print btn-sm rounded-pill px-3 shadow-sm text-white">
+                                    <i class="bi bi-printer"></i> ที่อยู่
                                 </a>
 
                                 <div class="dropdown">
                                     <button class="btn btn-light btn-sm border rounded-pill dropdown-toggle shadow-sm" data-bs-toggle="dropdown">จัดการ</button>
-                                    <ul class="dropdown-menu shadow border-0">
-                                        <li><a class="dropdown-item" href="order_detail.php?id=<?= $row['order_id'] ?>"><i class="bi bi-eye"></i> ดูรายละเอียด</a></li>
+                                    <ul class="dropdown-menu shadow border-0 mt-2">
+                                        <li><a class="dropdown-item" href="order_detail.php?id=<?= $row['order_id'] ?>"><i class="bi bi-eye me-2"></i> ดูรายละเอียด</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-primary" href="update_status.php?id=<?= $row['order_id'] ?>&status=กำลังส่ง"><i class="bi bi-truck"></i> จัดส่งสินค้า</a></li>
-                                        <li><a class="dropdown-item text-success" href="update_status.php?id=<?= $row['order_id'] ?>&status=สำเร็จแล้ว"><i class="bi bi-check-circle"></i> ทำรายการสำเร็จ</a></li>
+                                        <li><a class="dropdown-item text-primary" href="update_status.php?id=<?= $row['order_id'] ?>&status=กำลังส่ง"><i class="bi bi-truck me-2"></i> จัดส่งสินค้า</a></li>
+                                        <li><a class="dropdown-item text-success" href="update_status.php?id=<?= $row['order_id'] ?>&status=สำเร็จแล้ว"><i class="bi bi-check-circle me-2"></i> ทำรายการสำเร็จ</a></li>
                                     </ul>
                                 </div>
                             </div>
                         </td>
                     </tr>
                     <?php endwhile; ?>
+                    <?php if(mysqli_num_rows($result) == 0): ?>
+                        <tr>
+                            <td colspan="5" class="text-center py-5 text-muted">ยังไม่มีรายการสั่งซื้อในระบบ</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

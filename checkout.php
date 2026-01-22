@@ -2,6 +2,30 @@
 session_start();
 include 'config.php';
 
+// 1. ตรวจสอบการ Login และดึงข้อมูลสมาชิก
+// สมมติว่าตอน Login คุณเก็บไอดีไว้ใน $_SESSION['user_id']
+if (!isset($_SESSION['user_id'])) {
+    // ถ้าไม่ได้ Login ให้เด้งไปหน้า login (หรือจะให้กรอกเองก็ได้แล้วแต่การออกแบบ)
+    // header("Location: login.php"); 
+    // exit();
+    
+    // หากต้องการให้คนไม่ Login สั่งได้ด้วย ให้เซตค่าว่างไว้
+    $user_name = "";
+    $user_phone = "";
+    $user_address = "";
+} else {
+    $user_id = $_SESSION['user_id'];
+    $sql_user = "SELECT * FROM tb_member WHERE id_member = '$user_id'"; 
+    $res_user = mysqli_query($conn, $sql_user);
+    $user_data = mysqli_fetch_assoc($res_user);
+
+    // ดึงค่าจาก Database มาพักไว้ (เช็คชื่อ Column ในฐานข้อมูลคุณอีกครั้งนะครับ)
+    $user_name = isset($user_data['name_member']) ? $user_data['name_member'] : "";
+    $user_phone = isset($user_data['phone_member']) ? $user_data['phone_member'] : "";
+    $user_address = isset($user_data['address_member']) ? $user_data['address_member'] : "";
+}
+
+// 2. ตรวจสอบตะกร้าสินค้า
 $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 if (empty($cart_items)) {
     header("Location: menu.php");
@@ -25,8 +49,8 @@ $total_qty = 0;
         .checkout-card { border: none; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .form-control { border-radius: 10px; padding: 12px; border: 1px solid #eee; }
         .form-control:focus { border-color: #ffc107; box-shadow: none; }
-        .btn-confirm { background-color: #28a745; color: white; border-radius: 12px; padding: 15px; font-weight: 600; border: none; width: 100%; }
-        .btn-confirm:hover { background-color: #218838; }
+        .btn-confirm { background-color: #28a745; color: white; border-radius: 12px; padding: 15px; font-weight: 600; border: none; width: 100%; transition: 0.3s; }
+        .btn-confirm:hover { background-color: #218838; transform: translateY(-2px); }
     </style>
 </head>
 <body>
@@ -49,15 +73,18 @@ $total_qty = 0;
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label small text-muted">ชื่อ-นามสกุล</label>
-                            <input type="text" name="cus_name" class="form-control" placeholder="ระบุชื่อผู้รับ" required>
+                            <input type="text" name="cus_name" class="form-control" 
+                                   value="<?= htmlspecialchars($user_name) ?>" placeholder="ระบุชื่อผู้รับ" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label small text-muted">เบอร์โทรศัพท์</label>
-                            <input type="tel" name="cus_tel" class="form-control" placeholder="08X-XXX-XXXX" required>
+                            <input type="tel" name="cus_tel" class="form-control" 
+                                   value="<?= htmlspecialchars($user_phone) ?>" placeholder="08X-XXX-XXXX" required>
                         </div>
                         <div class="col-12">
                             <label class="form-label small text-muted">ที่อยู่จัดส่ง / เลขโต๊ะ (ถ้าทานที่ร้าน)</label>
-                            <textarea name="cus_address" class="form-control" rows="3" placeholder="ระบุที่อยู่ให้ชัดเจน" required></textarea>
+                            <textarea name="cus_address" class="form-control" rows="3" 
+                                      placeholder="ระบุที่อยู่ให้ชัดเจน" required><?= htmlspecialchars($user_address) ?></textarea>
                         </div>
                     </div>
                     
