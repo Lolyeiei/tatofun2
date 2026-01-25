@@ -43,7 +43,7 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
 
         body { font-family: 'Kanit', sans-serif; background-color: var(--tato-light); color: var(--tato-dark); overflow-x: hidden; }
         
-        /* 🚀 Navbar Custom (ปรับใหม่ให้ใหญ่และชิดขอบ) */
+        /* 🚀 Navbar Custom */
         .navbar { 
             background-color: var(--tato-yellow) !important; 
             border-bottom: 4px solid var(--tato-orange); 
@@ -51,9 +51,7 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
             box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
         }
 
-        .navbar > .container-fluid {
-            max-width: 95%; /* ขยายให้ชิดขอบมากขึ้น */
-        }
+        .navbar > .container-fluid { max-width: 95%; }
 
         .nav-link { 
             font-size: 1.15rem; 
@@ -63,46 +61,24 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
             transition: all 0.3s ease;
         }
 
-        .nav-link:hover { 
-            color: white !important; 
-            transform: translateY(-3px); 
-        }
+        .nav-link:hover { color: white !important; transform: translateY(-3px); }
 
-        /* ปุ่มเข้าสู่ระบบแบบใหม่ */
         .btn-login-custom {
-            background: var(--tato-dark);
-            color: white !important;
-            border-radius: 50px;
-            padding: 8px 25px !important;
-            font-weight: 600;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            text-decoration: none;
-            transition: 0.3s;
+            background: var(--tato-dark); color: white !important;
+            border-radius: 50px; padding: 8px 25px !important;
+            font-weight: 600; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            text-decoration: none; transition: 0.3s;
         }
 
-        .btn-login-custom:hover {
-            background: #000;
-            transform: scale(1.05);
-            color: var(--tato-yellow) !important;
-        }
+        .btn-login-custom:hover { background: #000; transform: scale(1.05); color: var(--tato-yellow) !important; }
 
-        /* 🌟 ลูกเล่นการ์ดเมนู 3D */
+        /* 🌟 Menu Card & Hover Effects */
         .menu-card { 
-            border: none; 
-            border-radius: 25px; 
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            background: white; 
-            overflow: hidden; 
+            border: none; border-radius: 25px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            background: white; overflow: hidden; 
         }
-        .menu-card:hover { 
-            transform: translateY(-15px) scale(1.05); 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important; 
-        }
+        .menu-card:hover { transform: translateY(-15px) scale(1.05); box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important; }
 
-        .card-img-top { transition: transform 0.5s ease; }
-        .menu-card:hover .card-img-top { transform: rotate(3deg) scale(1.1); }
-
-        /* ตะกร้าลอยตัว */
         .floating-cart-btn {
             position: fixed; bottom: 30px; right: 30px; z-index: 1000;
             border-radius: 50px; padding: 12px 25px;
@@ -114,7 +90,6 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
         }
         .floating-cart-btn:hover { transform: scale(1.1) rotate(-3deg); color: var(--tato-yellow); }
 
-        .carousel { box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-radius: 0 0 40px 40px; overflow: hidden; }
         .carousel-item img { height: 450px; object-fit: cover; }
         @media (max-width: 768px) { .carousel-item img { height: 250px; } }
     </style>
@@ -159,10 +134,14 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
                                 <i class="bi bi-person-circle me-1"></i> <?= $_SESSION['fullname'] ?>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-2">
-                                <li><a class="dropdown-item py-2" href="profile.php"><i class="bi bi-person me-2"></i>โปรไฟล์</a></li>
+                                <li><a class="dropdown-item py-2" href="profile.php"><i class="bi bi-person me-2 text-warning"></i>โปรไฟล์</a></li>
+                                
+                                <li><a class="dropdown-item py-2" href="order_history.php"><i class="bi bi-bag-check me-2 text-success"></i>ประวัติการสั่งซื้อ</a></li>
+                                
                                 <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                                     <li><a class="dropdown-item py-2 text-primary" href="admin/index_ad.php"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
                                 <?php endif; ?>
+                                
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item py-2 text-danger" href="logout.php"><i class="bi bi-power me-2"></i>ออกจากระบบ</a></li>
                             </ul>
@@ -201,8 +180,8 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
                     <p class="text-warning fw-bold fs-5">฿<?= number_format($row['price_menu'], 0) ?></p>
 
                     <?php if(isset($_SESSION['user_id'])): ?>
-                        <a href="cart_action.php?id=<?= $row['id_menu'] ?>&action=add" class="btn btn-warning w-100 rounded-pill fw-bold py-2">
-                            <i class="bi bi-cart-plus"></i> เพิ่มลงตะกร้า
+                        <a href="menu.php" class="btn btn-warning w-100 rounded-pill fw-bold py-2">
+                            <i class="bi bi-magic me-1"></i> เลือกท็อปปิ้ง & สั่งเลย
                         </a>
                     <?php else: ?>
                         <a href="login.php" class="btn btn-outline-secondary w-100 rounded-pill fw-bold btn-sm py-2">
@@ -225,26 +204,21 @@ $banner2_path = !empty($images[3]) ? "admin/img_ad/".$images[3] : "img/no2.png";
                     </div>
                     <p class="text-muted small">ความสุขคำโตๆ กับมันฝรั่งทอดคุณภาพดีที่เราตั้งใจมอบให้คุณในทุกๆ วัน อร่อย สนุก ไปกับ TatoFun</p>
                 </div>
-
                 <div class="col-lg-4">
                     <h5 class="fw-bold mb-3 border-start border-warning border-4 ps-2">ติดต่อเรา</h5>
                     <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill me-2 text-warning"></i> สุขุมวิท ศรีราชา จ.ชลบุรี 20110</p>
                     <p class="text-muted small mb-2"><i class="bi bi-telephone-fill me-2 text-warning"></i> 099-999-9999</p>
-                    <p class="text-muted small mb-2"><i class="bi bi-envelope-fill me-2 text-warning"></i> contact@tatofun.com</p>
                 </div>
-
-                <div class="col-lg-4 text-center text-lg-start">
+                <div class="col-lg-4">
                     <h5 class="fw-bold mb-3 border-start border-warning border-4 ps-2">ติดตามเรา</h5>
                     <div class="d-flex gap-2 justify-content-center justify-content-lg-start">
                         <a href="#" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm"><i class="bi bi-facebook"></i></a>
                         <a href="#" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm"><i class="bi bi-tiktok text-dark"></i></a>
-                        <a href="#" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm"><i class="bi bi-instagram"></i></a>
-                        <a href="#" class="btn btn-outline-warning btn-sm rounded-circle shadow-sm"><i class="bi bi-line"></i></a>
                     </div>
                 </div>
             </div>
             <div class="text-center mt-5 text-muted small border-top pt-3">
-                <p>© 2026 <strong>TatoFun</strong>. Fresh & Fun Fries. All Rights Reserved.</p>
+                <p>© 2026 <strong>TatoFun</strong>. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
