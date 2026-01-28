@@ -8,23 +8,19 @@ $user_phone = "";
 $user_address = "";
 
 if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['user_id'];
-    
-    // คำสั่งดึงข้อมูลสมาชิกมาแสดงในช่องกรอกอัตโนมัติ
+    $user_id = mysqli_real_escape_string($conn, $_SESSION['user_id']);
     $sql_user = "SELECT * FROM tb_users WHERE user_id = '$user_id'"; 
     $res_user = mysqli_query($conn, $sql_user);
 
-    // ตรวจสอบว่า query สำเร็จและเจอข้อมูลไหม เพื่อไม่ให้หน้าเว็บค้าง (Fatal Error)
     if ($res_user && mysqli_num_rows($res_user) > 0) {
         $user_data = mysqli_fetch_assoc($res_user);
         $user_name = $user_data['fullname'] ?? "";
         $user_phone = $user_data['phone'] ?? "";
-        // หากในฐานข้อมูลไม่มีคอลัมน์ address จะเป็นค่าว่างไว้ให้กรอกเอง
         $user_address = $user_data['address'] ?? ""; 
     }
 }
 
-// 2. ตรวจสอบตะกร้าสินค้า ถ้าไม่มีของให้เด้งกลับไปหน้าเมนู
+// 2. ตรวจสอบตะกร้าสินค้า
 $cart_items = $_SESSION['cart'] ?? [];
 if (empty($cart_items)) {
     echo "<script>alert('ยังไม่มีสินค้าในตะกร้าครับ'); window.location='menu.php';</script>";
@@ -98,23 +94,38 @@ $total_qty = 0;
                     <h5 class="fw-bold mb-4">สรุปคำสั่งซื้อ</h5>
                     <div class="list-group list-group-flush mb-4">
                         <?php 
-                        foreach ($cart_items as $id => $qty): 
-                            $id_safe = mysqli_real_escape_string($conn, $id);
-                            $sql_m = "SELECT * FROM tb_menu WHERE id_menu = '$id_safe'";
-                            $res_m = mysqli_query($conn, $sql_m);
-                            if ($row = mysqli_fetch_assoc($res_m)):
-                                $subtotal = $row['price_menu'] * $qty;
-                                $total_price += $subtotal;
-                                $total_qty += $qty;
+                        // ใช้โครงสร้างลูปแบบใหม่ที่รองรับ Array ของสินค้า
+                        foreach ($cart_items as $index => $item): 
+                            // ตรวจสอบว่าข้อมูลมี ID จริงไหม (ถ้าไม่มีแสดงว่าเป็นข้อมูลตะกร้าแบบเก่าที่ค้างอยู่)
+                            if (isset($item['id'])):
+                                $id_safe = mysqli_real_escape_string($conn, $item['id']);
+                                $sql_m = "SELECT * FROM tb_menu WHERE id_menu = '$id_safe'";
+                                $res_m = mysqli_query($conn, $sql_m);
+                                
+                                if ($res_m && $row = mysqli_fetch_assoc($res_m)):
+                                    // บังคับให้เป็นตัวเลขเพื่อความปลอดภัยในการคำนวณ
+                                    $price = (float)($row['price_menu'] ?? 0);
+                                    $quantity = (int)($item['qty'] ?? 1);
+                                    $subtotal = $price * $quantity;
+                                    
+                                    $total_price += $subtotal;
+                                    $total_qty += $quantity;
                         ?>
                         <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                             <div>
                                 <span class="fw-bold"><?= htmlspecialchars($row['name_menu']) ?></span>
-                                <div class="small text-muted">จำนวน <?= $qty ?> ชิ้น</div>
+                                <div class="small text-success">
+                                    <i class="bi bi-stars"></i> <?= htmlspecialchars($item['topping'] ?? 'ไม่ใส่ผงโรย') ?>
+                                </div>
+                                <div class="small text-muted">จำนวน <?= $quantity ?> ชิ้น</div>
                             </div>
                             <span class="fw-bold">฿<?= number_format($subtotal, 0) ?></span>
                         </div>
-                        <?php endif; endforeach; ?>
+                        <?php 
+                                endif; 
+                            endif; 
+                        endforeach; 
+                        ?>
                     </div>
 
                     <div class="d-flex justify-content-between mb-2">
